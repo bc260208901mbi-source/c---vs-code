@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Signage Admin</title>
+
+```
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        color: #222;
+    }
+
+    header {
+        background: #111827;
+        color: white;
+        padding: 20px 30px;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: 24px;
+    }
+
+    header p {
+        margin: 6px 0 0;
+        color: #cbd5e1;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+        margin-top: 0;
+        font-size: 19px;
+    }
+
+    input,
+    button {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 14px;
+    }
+
+    button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #1d4ed8;
+    }
+
+    button.secondary {
+        background: #475569;
+    }
+
+    button.danger {
+        background: #dc2626;
+    }
+
+    button.success {
+        background: #16a34a;
+    }
+
+    .result-card {
+        margin-top: 20px;
+    }
+
+    pre {
+        background: #111827;
+        color: #d1fae5;
+        padding: 15px;
+        border-radius: 8px;
+        overflow-x: auto;
+        min-height: 100px;
+        white-space: pre-wrap;
+    }
+
+    .device-list,
+    .media-list {
+        margin-top: 15px;
+    }
+
+    .item {
+        border: 1px solid #e5e7eb;
+        padding: 12px;
+        border-radius: 7px;
+        margin-top: 10px;
+        background: #fafafa;
+    }
+
+    .status-online {
+        color: #16a34a;
+        font-weight: bold;
+    }
+
+    .status-offline {
+        color: #dc2626;
+        font-weight: bold;
+    }
+
+    .preview {
+        width: 100%;
+        max-height: 200px;
+        object-fit: contain;
+        margin-top: 10px;
+        border-radius: 6px;
+        background: #111;
+    }
+
+    .small {
+        font-size: 13px;
+        color: #64748b;
+    }
+</style>
+```
+
+</head>
+
+<body>
+
+<header>
+    <h1>Digital Signage Admin Panel</h1>
+    <p>Manage devices and media</p>
+</header>
+
+<div class="container">
+
+```
+<div class="grid">
+
+    <!-- DEVICE REGISTER -->
+    <div class="card">
+        <h2>Register Device</h2>
+
+        <input
+            type="text"
+            id="deviceId"
+            placeholder="Device ID e.g. YF-0001"
+        >
+
+        <button onclick="registerDevice()">
+            Register Device
+        </button>
+    </div>
+
+    <!-- DEVICE LIST -->
+    <div class="card">
+        <h2>Devices</h2>
+
+        <button onclick="loadDevices()">
+            Refresh Devices
+        </button>
+
+        <div id="deviceList" class="device-list">
+            No devices loaded.
+        </div>
+    </div>
+
+    <!-- DEVICE ACTIONS -->
+    <div class="card">
+        <h2>Device Actions</h2>
+
+        <input
+            type="text"
+            id="actionDeviceId"
+            placeholder="Device ID"
+        >
+
+        <input
+            type="text"
+            id="deviceName"
+            placeholder="New device name"
+        >
+
+        <button onclick="renameDevice()">
+            Rename Device
+        </button>
+
+        <button class="success" onclick="heartbeat()">
+            Send Heartbeat
+        </button>
+
+        <button class="secondary" onclick="getDevice()">
+            Get Device
+        </button>
+    </div>
+
+    <!-- MEDIA UPLOAD -->
+    <div class="card">
+        <h2>Upload Media</h2>
+
+        <input
+            type="file"
+            id="mediaFile"
+            accept="image/*,video/*"
+        >
+
+        <button onclick="uploadMedia()">
+            Upload Media
+        </button>
+
+        <p class="small">
+            Images and videos are supported.
+        </p>
+    </div>
+
+    <!-- MEDIA LIST -->
+    <div class="card">
+        <h2>Media Library</h2>
+
+        <button onclick="loadMedia()">
+            Refresh Media
+        </button>
+
+        <div id="mediaList" class="media-list">
+            No media loaded.
+        </div>
+    </div>
+
+    <!-- MEDIA ASSIGNMENT -->
+    <div class="card">
+        <h2>Assign Media</h2>
+
+        <input
+            type="text"
+            id="assignDeviceId"
+            placeholder="Device ID"
+        >
+
+        <input
+            type="number"
+            id="assignMediaId"
+            placeholder="Media ID"
+        >
+
+        <button onclick="assignMedia()">
+            Assign Media
+        </button>
+
+        <button class="secondary" onclick="getDeviceMedia()">
+            Show Device Media
+        </button>
+    </div>
+
+    <!-- REMOVE MEDIA -->
+    <div class="card">
+        <h2>Remove Assigned Media</h2>
+
+        <input
+            type="text"
+            id="removeDeviceId"
+            placeholder="Device ID"
+        >
+
+        <input
+            type="number"
+            id="removeMediaId"
+            placeholder="Media ID"
+        >
+
+        <button class="danger" onclick="removeMedia()">
+            Remove Media
+        </button>
+    </div>
+
+</div>
+
+<!-- RESULT -->
+<div class="card result-card">
+    <h2>API Response</h2>
+    <pre id="result">Ready...</pre>
+</div>
+```
+
+</div>
+
+<script>
+
+const API = "http://localhost:8080";
+
+const result = document.getElementById("result");
+
+function showResult(data) {
+    if (typeof data === "string") {
+        result.textContent = data;
+    } else {
+        result.textContent = JSON.stringify(data, null, 2);
+    }
+}
+
+async function request(url, options = {}) {
+
+    try {
+
+        const response = await fetch(API + url, options);
+
+        const text = await response.text();
+
+        let data;
+
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                `HTTP ${response.status}: ${
+                    typeof data === "string"
+                        ? data
+                        : JSON.stringify(data)
+                }`
+            );
+        }
+
+        return data;
+
+    } catch (error) {
+
+        showResult("ERROR:\n" + error.message);
+
+        throw error;
+    }
+}
+
+
+/* =========================
+   DEVICES
+========================= */
+
+async function registerDevice() {
+
+    const deviceId =
+        document.getElementById("deviceId").value.trim();
+
+    if (!deviceId) {
+        alert("Enter a device ID.");
+        return;
+    }
+
+    try {
+
+        const data = await request(
+            "/api/devices/register",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    device_id: deviceId
+                })
+            }
+        );
+
+        showResult(data);
+
+        loadDevices();
+
+    } catch {}
+}
+
+
+async function loadDevices() {
+
+    try {
+
+        const devices =
+            await request("/api/devices");
+
+        showResult(devices);
+
+        const container =
+            document.getElementById("deviceList");
+
+        if (!devices.length) {
+
+            container.innerHTML =
+                "<p>No devices found.</p>";
+
+            return;
+        }
+
+        container.innerHTML = "";
+
+        devices.forEach(device => {
+
+            const div =
+                document.createElement("div");
+
+            div.className = "item";
+
+            const statusClass =
+                device.status === "online"
+                    ? "status-online"
+                    : "status-offline";
+
+            div.innerHTML = `
+                <strong>${escapeHtml(device.name)}</strong><br>
+                ID: ${escapeHtml(device.id)}<br>
+                Status:
+                <span class="${statusClass}">
+                    ${escapeHtml(device.status)}
+                </span><br>
+                Last Seen: ${device.last_seen}
+            `;
+
+            container.appendChild(div);
+        });
+
+    } catch {}
+}
+
+
+async function getDevice() {
+
+    const id =
+        document.getElementById("actionDeviceId")
+            .value.trim();
+
+    if (!id) {
+        alert("Enter device ID.");
+        return;
+    }
+
+    try {
+
+        const data =
+            await request(
+                `/api/devices/${encodeURIComponent(id)}`
+            );
+
+        showResult(data);
+
+    } catch {}
+}
+
+
+async function renameDevice() {
+
+    const id =
+        document.getElementById("actionDeviceId")
+            .value.trim();
+
+    const name =
+        document.getElementById("deviceName")
+            .value.trim();
+
+    if (!id || !name) {
+        alert("Enter device ID and new name.");
+        return;
+    }
+
+    try {
+
+        const data =
+            await request(
+                `/api/devices/${encodeURIComponent(id)}/name`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name: name
+                    })
+                }
+            );
+
+        showResult(data);
+
+        loadDevices();
+
+    } catch {}
+}
+
+
+async function heartbeat() {
+
+    const id =
+        document.getElementById("actionDeviceId")
+            .value.trim();
+
+    if (!id) {
+        alert("Enter device ID.");
+        return;
+    }
+
+    try {
+
+        const data =
+            await request(
+                `/api/devices/${encodeURIComponent(id)}/heartbeat`,
+                {
+                    method: "POST"
+                }
+            );
+
+        showResult(data);
+
+        loadDevices();
+
+    } catch {}
+}
+
+
+/* =========================
+   MEDIA
+========================= */
+
+async function uploadMedia() {
+
+    const input =
+        document.getElementById("mediaFile");
+
+    if (!input.files.length) {
+        alert("Select a file first.");
+        return;
+    }
+
+    const file = input.files[0];
+
+    try {
+
+        /*
+         * Your working backend route:
+         *
+         * POST /api/media/upload/{filename}
+         *
+         * It expects the raw file body.
+         */
+
+        const data =
+            await request(
+                `/api/media/upload/${encodeURIComponent(file.name)}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            file.type ||
+                            "application/octet-stream"
+                    },
+                    body: file
+                }
+            );
+
+        showResult(data);
+
+        loadMedia();
+
+    } catch {}
+}
+
+
+async function loadMedia() {
+
+    try {
+
+        const media =
+            await request("/api/media");
+
+        showResult(media);
+
+        const container =
+            document.getElementById("mediaList");
+
+        if (!media.length) {
+
+            container.innerHTML =
+                "<p>No media found.</p>";
+
+            return;
+        }
+
+        container.innerHTML = "";
+
+        media.forEach(item => {
+
+            const div =
+                document.createElement("div");
+
+            div.className = "item";
+
+            div.innerHTML = `
+                <strong>
+                    ${escapeHtml(item.original_name)}
+                </strong><br>
+
+                ID: ${item.id}<br>
+                Type: ${escapeHtml(item.type)}<br>
+
+                <button
+                    onclick="previewMedia(${item.id})"
+                >
+                    Preview
+                </button>
+
+                <div id="preview-${item.id}"></div>
+            `;
+
+            container.appendChild(div);
+        });
+
+    } catch {}
+}
+
+
+function previewMedia(id) {
+
+    const container =
+        document.getElementById(`preview-${id}`);
+
+    container.innerHTML = `
+        <img
+            class="preview"
+            src="${API}/api/media/${id}/file"
+            alt="Media preview"
+        >
+    `;
+}
+
+
+/* =========================
+   DEVICE MEDIA
+========================= */
+
+async function assignMedia() {
+
+    const deviceId =
+        document.getElementById("assignDeviceId")
+            .value.trim();
+
+    const mediaId =
+        document.getElementById("assignMediaId")
+            .value.trim();
+
+    if (!deviceId || !mediaId) {
+        alert("Enter device ID and media ID.");
+        return;
+    }
+
+    try {
+
+        const data =
+            await request(
+                `/api/devices/${encodeURIComponent(deviceId)}/media`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        media_id: Number(mediaId)
+                    })
+                }
+            );
+
+        showResult(data);
+
+    } catch {}
+}
+
+
+async function getDeviceMedia() {
+
+    const deviceId =
+        document.getElementById("assignDeviceId")
+            .value.trim();
+
+    if (!deviceId) {
+        alert("Enter device ID.");
+        return;
+    }
+
+    try {
+
+        const data =
+            await request(
+                `/api/devices/${encodeURIComponent(deviceId)}/media`
+            );
+
+        showResult(data);
+
+    } catch {}
+}
+
+
+async function removeMedia() {
+
+    const deviceId =
+        document.getElementById("removeDeviceId")
+            .value.trim();
+
+    const mediaId =
+        document.getElementById("removeMediaId")
+            .value.trim();
+
+    if (!deviceId || !mediaId) {
+        alert("Enter device ID and media ID.");
+        return;
+    }
+
+    try {
+
+        const data =
+            await request(
+                `/api/devices/${encodeURIComponent(deviceId)}/media/${encodeURIComponent(mediaId)}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+        showResult(data);
+
+    } catch {}
+}
+
+
+/* =========================
+   SECURITY / HTML
+========================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+/* Load initial data */
+
+loadDevices();
+loadMedia();
+
+</script>
+
+</body>
+</html>

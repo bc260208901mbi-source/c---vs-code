@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html lang="en"> <head> <meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Digital Signage Player</title>
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    /* =========================
+       SETUP SCREEN
+    ========================= */
+
+    #setupScreen {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #111827;
+    }
+
+    .setupBox {
+        width: 90%;
+        max-width: 450px;
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .setupBox h1 {
+        margin-top: 0;
+    }
+
+    .setupBox p {
+        color: #64748b;
+    }
+
+    .setupBox input {
+        width: 100%;
+        padding: 13px;
+        margin-top: 15px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        font-size: 16px;
+    }
+
+    .setupBox button {
+        width: 100%;
+        padding: 13px;
+        margin-top: 12px;
+        border: none;
+        border-radius: 7px;
+        background: #2563eb;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .setupBox button:hover {
+        background: #1d4ed8;
+    }
+
+    #setupError {
+        color: #dc2626;
+        margin-top: 12px;
+    }
+
+
+    /* =========================
+       PLAYER
+    ========================= */
+
+    #playerScreen {
+        display: none;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        position: relative;
+    }
+
+    #mediaContainer {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #000;
+    }
+
+    #mediaContainer img,
+    #mediaContainer video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #000;
+    }
+
+
+    /* =========================
+       STATUS
+    ========================= */
+
+    #status {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 20;
+
+        background: rgba(0, 0, 0, 0.65);
+        color: white;
+
+        padding: 7px 12px;
+        border-radius: 5px;
+
+        font-size: 13px;
+
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    #status.show {
+        opacity: 1;
+    }
+
+
+    /* =========================
+       DEVICE INFO
+    ========================= */
+
+    #deviceInfo {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 20;
+
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+
+        padding: 6px 10px;
+        border-radius: 5px;
+
+        font-size: 12px;
+
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    #playerScreen:hover #deviceInfo {
+        opacity: 1;
+    }
+
+
+    /* =========================
+       CONTROLS
+    ========================= */
+
+    #controls {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 30;
+
+        display: flex;
+        gap: 8px;
+
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    #playerScreen:hover #controls {
+        opacity: 1;
+    }
+
+    #controls button {
+        border: none;
+        border-radius: 5px;
+
+        padding: 8px 12px;
+
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+
+        cursor: pointer;
+    }
+
+    #controls button:hover {
+        background: rgba(50, 50, 50, 0.9);
+    }
+
+
+    /* =========================
+       NO MEDIA
+    ========================= */
+
+    #noMedia {
+        display: none;
+
+        color: white;
+        text-align: center;
+    }
+
+    #noMedia h2 {
+        margin-bottom: 8px;
+    }
+
+    #noMedia p {
+        color: #aaa;
+    }
+
+
+    /* =========================
+       LOADING
+    ========================= */
+
+    #loading {
+        position: absolute;
+        inset: 0;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        background: #000;
+        color: white;
+
+        z-index: 10;
+    }
+
+</style>
+
+</head>
+
+<body>
+
+<!-- ========================================== DEVICE SETUP SCREEN ========================================== -->
+
+<div id="setupScreen">
+
+<div class="setupBox">
+
+    <h1>Digital Signage</h1>
+
+    <p>
+        Enter the Device ID to connect this display.
+    </p>
+
+    <input
+        type="text"
+        id="deviceIdInput"
+        placeholder="Example: YF-0001"
+        autocomplete="off"
+    >
+
+    <button onclick="connectDevice()">
+        CONNECT
+    </button>
+
+    <button
+        onclick="clearSavedDevice()"
+        style="background:#475569;"
+    >
+        USE ANOTHER DEVICE
+    </button>
+
+    <div id="setupError"></div>
+
+</div>
+
+</div>
+
+<!-- ========================================== PLAYER SCREEN ========================================== -->
+
+<div id="playerScreen">
+
+<div id="loading">
+    Connecting...
+</div>
+
+
+<div id="mediaContainer">
+
+    <div id="noMedia">
+
+        <h2>No Media Assigned</h2>
+
+        <p>
+            This device currently has no media.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div id="status"></div>
+
+
+<div id="deviceInfo">
+    Device: <span id="currentDevice"></span>
+</div>
+
+
+<div id="controls">
+
+    <button onclick="toggleFullscreen()">
+        Fullscreen
+    </button>
+
+    <button onclick="reloadPlaylist()">
+        Reload
+    </button>
+
+    <button onclick="changeDevice()">
+        Change Device
+    </button>
+
+</div>
+
+</div>
+
+<script> /* ========================================== CONFIGURATION ========================================== */ const API = "http://localhost:8080"; const PLAYLIST_REFRESH_TIME = 30000; const HEARTBEAT_TIME = 15000; /* ========================================== STATE ========================================== */ let deviceId = null; let playlist = []; let currentIndex = 0; let currentMedia = null; let playTimer = null; let refreshTimer = null; let heartbeatTimer = null; /* ========================================== ELEMENTS ========================================== */ const setupScreen = document.getElementById("setupScreen"); const playerScreen = document.getElementById("playerScreen"); const deviceIdInput = document.getElementById("deviceIdInput"); const setupError = document.getElementById("setupError"); const mediaContainer = document.getElementById("mediaContainer"); const noMedia = document.getElementById("noMedia"); const loading = document.getElementById("loading"); const currentDevice = document.getElementById("currentDevice"); const statusBox = document.getElementById("status"); /* ========================================== STARTUP ========================================== */ window.addEventListener("load", () => { const savedDevice = localStorage.getItem("signage_device_id"); if (savedDevice) { deviceIdInput.value = savedDevice; connectDevice(); } }); /* ========================================== CONNECT DEVICE ========================================== */ async function connectDevice() { const enteredId = deviceIdInput.value.trim(); if (!enteredId) { setupError.textContent = "Please enter a Device ID."; return; } deviceId = enteredId; setupError.textContent = ""; showSetupLoading(); try { /* * First check that the device exists. */ const response = await fetch( `${API}/api/devices/${encodeURIComponent(deviceId)}` ); if (!response.ok) { throw new Error( "Device not found." ); } const device = await response.json(); console.log("Device:", device); /* * Save the device ID. */ localStorage.setItem( "signage_device_id", deviceId ); /* * Start player. */ setupScreen.style.display = "none"; playerScreen.style.display = "block"; currentDevice.textContent = deviceId; await loadPlaylist(); startHeartbeat(); startPlaylistRefresh(); } catch (error) { console.error(error); setupError.textContent = error.message || "Could not connect to device."; } } /* ========================================== LOAD PLAYLIST ========================================== */ async function loadPlaylist() { showStatus("Loading media..."); try { const response = await fetch( `${API}/api/devices/${encodeURIComponent(deviceId)}/media` ); if (!response.ok) { throw new Error( `HTTP ${response.status}` ); } const data = await response.json(); console.log( "Device media:", data ); /* * Backend should return an array. */ if (!Array.isArray(data)) { throw new Error( "Invalid media response." ); } playlist = data; /* * No media. */ if (playlist.length === 0) { stopPlayback(); showNoMedia(); showStatus( "No media assigned" ); return; } /* * Media exists. */ hideNoMedia(); loading.style.display = "none"; /* * If this is the first load, * start from the beginning. */ if ( currentMedia === null || currentIndex >= playlist.length ) { currentIndex = 0; } playCurrentMedia(); } catch (error) { console.error( "Playlist error:", error ); showStatus( "Failed to load media" ); showNoMedia(); } } /* ========================================== PLAY CURRENT MEDIA ========================================== */ function playCurrentMedia() { clearTimeout(playTimer); mediaContainer .querySelectorAll( "img, video" ) .forEach(element => { element.remove(); }); if ( playlist.length === 0 ) { showNoMedia(); return; } const media = playlist[currentIndex]; currentMedia = media; console.log( "Playing:", media ); /* * Get media ID. */ const mediaId = media.id; const mediaUrl = `${API}/api/media/${mediaId}/file`; /* * Determine media type. */ const type = String( media.type || "" ).toLowerCase(); /* * IMAGE */ if ( type === "image" || isImage(media) ) { playImage( mediaUrl, media ); return; } /* * VIDEO */ if ( type === "video" || isVideo(media) ) { playVideo( mediaUrl, media ); return; } /* * Unknown media type. */ console.warn( "Unknown media type:", media ); nextMedia(); } /* ========================================== PLAY IMAGE ========================================== */ function playImage( url, media ) { const img = document.createElement("img"); img.src = url; img.alt = media.original_name || "Digital signage media"; img.onload = () => { loading.style.display = "none"; hideNoMedia(); showStatus( `Playing image` ); /* * Display image for 10 seconds. */ playTimer = setTimeout( nextMedia, 10000 ); }; img.onerror = () => { console.error( "Image failed:", url ); showStatus( "Image failed to load" ); playTimer = setTimeout( nextMedia, 2000 ); }; mediaContainer.appendChild( img ); } /* ========================================== PLAY VIDEO ========================================== */ function playVideo( url, media ) { const video = document.createElement("video"); video.src = url; video.autoplay = true; video.muted = true; video.playsInline = true; video.controls = false; video.loop = false; video.onloadeddata = () => { loading.style.display = "none"; hideNoMedia(); showStatus( "Playing video" ); }; /* * When video finishes, * play next media. */ video.onended = () => { nextMedia(); }; video.onerror = () => { console.error( "Video failed:", url ); showStatus( "Video failed to load" ); playTimer = setTimeout( nextMedia, 2000 ); }; mediaContainer.appendChild( video ); /* * Start playback. */ video.play() .catch(error => { console.warn( "Autoplay blocked:", error ); /* * Video is muted, so * autoplay normally works. */ }); } /* ========================================== NEXT MEDIA ========================================== */ function nextMedia() { clearTimeout(playTimer); if ( playlist.length === 0 ) { return; } currentIndex++; if ( currentIndex >= playlist.length ) { currentIndex = 0; } playCurrentMedia(); } /* ========================================== DETECT IMAGE ========================================== */ function isImage(media) { const filename = String( media.original_name || media.filename || "" ).toLowerCase(); return ( filename.endsWith(".jpg") || filename.endsWith(".jpeg") || filename.endsWith(".png") || filename.endsWith(".gif") || filename.endsWith(".webp") ); } /* ========================================== DETECT VIDEO ========================================== */ function isVideo(media) { const filename = String( media.original_name || media.filename || "" ).toLowerCase(); return ( filename.endsWith(".mp4") || filename.endsWith(".webm") || filename.endsWith(".ogg") || filename.endsWith(".mov") ); } /* ========================================== HEARTBEAT ========================================== */ function startHeartbeat() { clearInterval( heartbeatTimer ); sendHeartbeat(); heartbeatTimer = setInterval( sendHeartbeat, HEARTBEAT_TIME ); } async function sendHeartbeat() { if (!deviceId) { return; } try { const response = await fetch( `${API}/api/devices/${encodeURIComponent(deviceId)}/heartbeat`, { method: "POST" } ); if (!response.ok) { console.warn( "Heartbeat failed:", response.status ); return; } console.log( "Heartbeat sent" ); } catch (error) { console.warn( "Heartbeat error:", error ); } } /* ========================================== AUTO REFRESH PLAYLIST ========================================== */ function startPlaylistRefresh() { clearInterval( refreshTimer ); refreshTimer = setInterval( refreshPlaylist, PLAYLIST_REFRESH_TIME ); } async function refreshPlaylist() { if (!deviceId) { return; } try { const response = await fetch( `${API}/api/devices/${encodeURIComponent(deviceId)}/media` ); if (!response.ok) { return; } const newPlaylist = await response.json(); /* * Compare playlist. */ const oldIds = playlist.map( item => item.id ); const newIds = newPlaylist.map( item => item.id ); const changed = JSON.stringify(oldIds) !== JSON.stringify(newIds); if (changed) { console.log( "Playlist changed." ); playlist = newPlaylist; if ( currentIndex >= playlist.length ) { currentIndex = 0; } if ( playlist.length === 0 ) { stopPlayback(); showNoMedia(); } else { playCurrentMedia(); } } } catch (error) { console.warn( "Playlist refresh failed:", error ); } } /* ========================================== STOP PLAYBACK ========================================== */ function stopPlayback() { clearTimeout( playTimer ); const videos = mediaContainer .querySelectorAll( "video" ); videos.forEach( video => { video.pause(); } ); mediaContainer .querySelectorAll( "img, video" ) .forEach( element => { element.remove(); } ); } /* ========================================== NO MEDIA ========================================== */ function showNoMedia() { loading.style.display = "none"; noMedia.style.display = "block"; } function hideNoMedia() { noMedia.style.display = "none"; } /* ========================================== STATUS ========================================== */ function showStatus(message) { statusBox.textContent = message; statusBox.classList.add( "show" ); clearTimeout( window.statusTimer ); window.statusTimer = setTimeout( () => { statusBox.classList.remove( "show" ); }, 2500 ); } /* ========================================== SETUP LOADING ========================================== */ function showSetupLoading() { setupError.textContent = "Connecting..."; } /* ========================================== FULLSCREEN ========================================== */ function toggleFullscreen() { if (!document.fullscreenElement) { document.documentElement .requestFullscreen() .catch( error => { console.warn( "Fullscreen failed:", error ); } ); } else { document.exitFullscreen(); } } /* ========================================== CHANGE DEVICE ========================================== */ function changeDevice() { /* * Stop everything. */ stopPlayback(); clearInterval( heartbeatTimer ); clearInterval( refreshTimer ); deviceId = null; playlist = []; currentIndex = 0; currentMedia = null; /* * Remove saved device. */ localStorage.removeItem( "signage_device_id" ); /* * Show setup. */ playerScreen.style.display = "none"; setupScreen.style.display = "flex"; deviceIdInput.value = ""; deviceIdInput.focus(); } /* ========================================== CLEAR SAVED DEVICE ========================================== */ function clearSavedDevice() { localStorage.removeItem( "signage_device_id" ); deviceIdInput.value = ""; setupError.textContent = ""; deviceIdInput.focus(); } /* ========================================== MANUAL RELOAD ========================================== */ async function reloadPlaylist() { showStatus( "Reloading..." ); await loadPlaylist(); } /* ========================================== KEYBOARD SHORTCUT ========================================== */ document.addEventListener( "keydown", event => { /* * F = fullscreen */ if ( event.key.toLowerCase() === "f" ) { toggleFullscreen(); } /* * R = reload */ if ( event.key.toLowerCase() === "r" ) { reloadPlaylist(); } /* * Escape handled by browser. */ } ); </script>
+
+</body> </html>
